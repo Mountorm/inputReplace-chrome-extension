@@ -1,0 +1,2 @@
+# inputReplace
+用于一键replace页面上所有input中指定内容
