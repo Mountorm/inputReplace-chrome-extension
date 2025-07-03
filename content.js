@@ -152,6 +152,48 @@ function initPanel() {
   const content = document.createElement('div');
   content.className = 'replace-panel-content';
   
+  // 新增：提取内容输入框和按钮
+  const extractGroup = document.createElement('div');
+  extractGroup.className = 'replace-panel-form-group';
+
+  const extractLabel = document.createElement('label');
+  extractLabel.className = 'replace-panel-label';
+  extractLabel.textContent = '商品标题：';
+
+  const extractInput = document.createElement('input');
+  extractInput.type = 'text';
+  extractInput.className = 'replace-panel-input';
+  extractInput.setAttribute('readonly', 'readonly');
+  extractInput.placeholder = '点击提取按钮获取内容';
+
+  const extractBtn = document.createElement('button');
+  extractBtn.className = 'replace-panel-button';
+  extractBtn.textContent = '提取';
+  extractBtn.style.marginLeft = '8px';
+
+  extractBtn.addEventListener('click', function() {
+    // 新的查找逻辑：查找class为chat-gpt-panel is-title的元素下的第一个input
+    const panel = document.querySelector('.chat-gpt-panel.is-title');
+    let foundInput = null;
+    if (panel) {
+      const inputs = panel.querySelectorAll('input');
+      if (inputs.length > 0) {
+        foundInput = inputs[0];
+      }
+    }
+    if (foundInput) {
+      extractInput.value = foundInput.value;
+      showPanelStatus('提取成功', 'success', status);
+    } else {
+      extractInput.value = '';
+      showPanelStatus('未找到目标input', 'error', status);
+    }
+  });
+
+  extractGroup.appendChild(extractLabel);
+  extractGroup.appendChild(extractInput);
+  extractGroup.appendChild(extractBtn);
+
   // 搜索关键词输入框
   const searchGroup = document.createElement('div');
   searchGroup.className = 'replace-panel-form-group';
@@ -235,7 +277,8 @@ function initPanel() {
   const status = document.createElement('div');
   status.className = 'replace-panel-status';
   
-  // 组装面板内容
+  // 组装面板内容（插入到最上方）
+  content.appendChild(extractGroup);
   content.appendChild(searchGroup);
   content.appendChild(replaceGroup);
   content.appendChild(buttonGroup1);
