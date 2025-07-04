@@ -730,4 +730,63 @@
   padding: 3px 8px;
   cursor: pointer;
   font-size: 12px;
+}
+
+/* 其他内容选项卡样式 */
+.other-content-card {
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.other-content-title {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.other-content-status {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #555;
+  background-color: #fff;
+  border: 1px solid #eee;
+  padding: 10px;
+  border-radius: 4px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.other-content-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logistics-inputs-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.logistics-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.logistics-input-wrapper label {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.logistics-input-wrapper input {
+  width: 80px;
 } 

@@ -15,7 +15,7 @@ let apiSettings = {
   apiKey: 'sk-eae202e23b094000a09a116ddf898df6',
   model: 'deepseek-chat',
   temperature: 1.2,
-  max_tokens: 2000
+  max_tokens: 5000
 };
 
 // 监听来自弹出界面的消息
@@ -123,7 +123,7 @@ function initPanel() {
   
   const title = document.createElement('h3');
   title.className = 'replace-panel-title';
-  title.textContent = '批量替换输入框文本';
+  title.textContent = '上货助手';
   
   const controls = document.createElement('div');
   controls.className = 'replace-panel-controls';
@@ -175,11 +175,17 @@ function initPanel() {
   skuTab.textContent = 'SKU优化';
   skuTab.dataset.tab = 'sku';
   
+  const otherTab = document.createElement('div');
+  otherTab.className = 'panel-tab';
+  otherTab.textContent = '其他内容';
+  otherTab.dataset.tab = 'other';
+  
   tabs.appendChild(titleTab);
   tabs.appendChild(skuTab);
+  tabs.appendChild(otherTab);
   
   // 添加标签切换事件
-  [titleTab, skuTab].forEach(tab => {
+  [titleTab, skuTab, otherTab].forEach(tab => {
     tab.addEventListener('click', function() {
       // 移除所有标签和内容的活动状态
       document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
@@ -466,6 +472,320 @@ function initPanel() {
   skuContainer.id = 'sku-container';
   skuContent.appendChild(skuContainer);
   
+  // 4. 其他内容标签内容
+  const otherContent = document.createElement('div');
+  otherContent.className = 'tab-content';
+  otherContent.dataset.tab = 'other';
+
+  // 创建产品描述卡片
+  const descriptionCard = document.createElement('div');
+  descriptionCard.className = 'other-content-card';
+
+  const descriptionTitle = document.createElement('h3');
+  descriptionTitle.className = 'other-content-title';
+  descriptionTitle.textContent = '产品描述文字移除';
+
+  const descriptionExtractBtn = document.createElement('button');
+  descriptionExtractBtn.className = 'replace-panel-button';
+  descriptionExtractBtn.textContent = '提取内容';
+  descriptionExtractBtn.style.flex = 'none';
+  descriptionExtractBtn.style.width = '120px';
+
+
+  const descriptionStatus = document.createElement('div');
+  descriptionStatus.className = 'other-content-status';
+  descriptionStatus.textContent = '请点击提取按钮';
+
+  descriptionCard.appendChild(descriptionTitle);
+  descriptionCard.appendChild(descriptionExtractBtn);
+  descriptionCard.appendChild(descriptionStatus);
+
+  otherContent.appendChild(descriptionCard);
+
+  // 创建批量填充库存卡片
+  const inventoryCard = document.createElement('div');
+  inventoryCard.className = 'other-content-card';
+
+  const inventoryTitle = document.createElement('h3');
+  inventoryTitle.className = 'other-content-title';
+  inventoryTitle.textContent = '批量填入库存';
+
+  const inventoryContainer = document.createElement('div');
+  inventoryContainer.className = 'other-content-container';
+
+  const inventoryInput = document.createElement('input');
+  inventoryInput.type = 'number';
+  inventoryInput.className = 'replace-panel-input';
+  inventoryInput.value = '500';
+  inventoryInput.style.width = '120px';
+
+  const inventoryApplyBtn = document.createElement('button');
+  inventoryApplyBtn.className = 'replace-panel-button';
+  inventoryApplyBtn.textContent = '应用';
+  inventoryApplyBtn.style.flex = 'none';
+  inventoryApplyBtn.style.width = '120px';
+
+  inventoryContainer.appendChild(inventoryInput);
+  inventoryContainer.appendChild(inventoryApplyBtn);
+
+  inventoryCard.appendChild(inventoryTitle);
+  inventoryCard.appendChild(inventoryContainer);
+
+  otherContent.appendChild(inventoryCard);
+
+  // 创建物流信息卡片
+  const logisticsCard = document.createElement('div');
+  logisticsCard.className = 'other-content-card';
+
+  const logisticsTitle = document.createElement('h3');
+  logisticsTitle.className = 'other-content-title';
+  logisticsTitle.textContent = '设置物流信息';
+
+  const logisticsInputsContainer = document.createElement('div');
+  logisticsInputsContainer.className = 'logistics-inputs-container';
+
+  // 创建输入框和标签的辅助函数
+  function createLogisticsInput(labelText) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'logistics-input-wrapper';
+    const label = document.createElement('label');
+    label.textContent = labelText;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'replace-panel-input';
+    input.readOnly = true;
+    wrapper.appendChild(label);
+    wrapper.appendChild(input);
+    return { wrapper, input };
+  }
+
+  const weightGroup = createLogisticsInput('包裹重量:');
+  const lengthGroup = createLogisticsInput('长:');
+  const widthGroup = createLogisticsInput('宽:');
+  const heightGroup = createLogisticsInput('高:');
+
+  logisticsInputsContainer.appendChild(weightGroup.wrapper);
+  logisticsInputsContainer.appendChild(lengthGroup.wrapper);
+  logisticsInputsContainer.appendChild(widthGroup.wrapper);
+  logisticsInputsContainer.appendChild(heightGroup.wrapper);
+
+  const logisticsControlsContainer = document.createElement('div');
+  logisticsControlsContainer.className = 'other-content-container';
+  logisticsControlsContainer.style.marginTop = '15px';
+
+  const logisticsExtractBtn = document.createElement('button');
+  logisticsExtractBtn.className = 'replace-panel-button';
+  logisticsExtractBtn.textContent = '提取';
+  logisticsExtractBtn.style.flex = 'none';
+  logisticsExtractBtn.style.width = '120px';
+
+  const logisticsApplyBtn = document.createElement('button');
+  logisticsApplyBtn.className = 'replace-panel-button';
+  logisticsApplyBtn.textContent = '应用';
+  logisticsApplyBtn.style.flex = 'none';
+  logisticsApplyBtn.style.width = '120px';
+  logisticsApplyBtn.disabled = true;
+
+  const logisticsApplyDefaultBtn = document.createElement('button');
+  logisticsApplyDefaultBtn.className = 'replace-panel-button';
+  logisticsApplyDefaultBtn.textContent = '应用默认';
+  logisticsApplyDefaultBtn.style.flex = 'none';
+  logisticsApplyDefaultBtn.style.width = '120px';
+
+  logisticsControlsContainer.appendChild(logisticsExtractBtn);
+  logisticsControlsContainer.appendChild(logisticsApplyBtn);
+  logisticsControlsContainer.appendChild(logisticsApplyDefaultBtn);
+
+  logisticsCard.appendChild(logisticsTitle);
+  logisticsCard.appendChild(logisticsInputsContainer);
+  logisticsCard.appendChild(logisticsControlsContainer);
+
+  otherContent.appendChild(logisticsCard);
+
+  let originalLogisticsElements = {};
+
+  logisticsApplyDefaultBtn.addEventListener('click', () => {
+    // 1. 查找页面元素
+    const allInputs = document.querySelectorAll('input.jx-input__inner');
+    if (allInputs.length < 4) {
+      showPanelStatus(`需要至少4个 'jx-input__inner' 输入框，但只找到 ${allInputs.length} 个`, 'error', status);
+      return;
+    }
+    const lastFourInputs = Array.from(allInputs).slice(-4);
+    const heightInputElement = lastFourInputs[3];
+    const widthInputElement  = lastFourInputs[2];
+    const lengthInputElement = lastFourInputs[1];
+    const weightInputElement = lastFourInputs[0];
+
+    // 保存原始元素引用以便"应用"按钮可用
+    originalLogisticsElements = {
+      weight: weightInputElement,
+      length: lengthInputElement,
+      width: widthInputElement,
+      height: heightInputElement,
+    };
+
+    // 2. 定义并设置默认值
+    const defaultValues = { weight: '60', length: '20', width: '13', height: '3' };
+    
+    // 更新面板输入框
+    weightGroup.input.value = defaultValues.weight;
+    lengthGroup.input.value = defaultValues.length;
+    widthGroup.input.value = defaultValues.width;
+    heightGroup.input.value = defaultValues.height;
+    
+    // 更新页面输入框并触发事件
+    weightInputElement.value = defaultValues.weight;
+    triggerInputEvent(weightInputElement);
+    lengthInputElement.value = defaultValues.length;
+    triggerInputEvent(lengthInputElement);
+    widthInputElement.value = defaultValues.width;
+    triggerInputEvent(widthInputElement);
+    heightInputElement.value = defaultValues.height;
+    triggerInputEvent(heightInputElement);
+    
+    // 3. 更新UI状态
+    [weightGroup, lengthGroup, widthGroup, heightGroup].forEach(g => g.input.readOnly = false);
+    logisticsApplyBtn.disabled = false;
+    showPanelStatus('已应用默认物流信息', 'success', status);
+  });
+
+  logisticsExtractBtn.addEventListener('click', () => {
+    const allInputs = document.querySelectorAll('input.jx-input__inner');
+
+    // 重置状态
+    originalLogisticsElements = {};
+    const inputGroups = [weightGroup, lengthGroup, widthGroup, heightGroup];
+    inputGroups.forEach(group => {
+      group.input.value = '';
+      group.input.readOnly = true;
+    });
+    logisticsApplyBtn.disabled = true;
+
+    if (allInputs.length < 4) {
+      showPanelStatus(`需要至少4个 'jx-input__inner' 输入框，但只找到 ${allInputs.length} 个`, 'error', status);
+      return;
+    }
+
+    // 提取最后四个input元素
+    const lastFourInputs = Array.from(allInputs).slice(-4);
+    
+    // 从后往前分别是 高、宽、长、重量
+    const heightInputElement = lastFourInputs[3];
+    const widthInputElement  = lastFourInputs[2];
+    const lengthInputElement = lastFourInputs[1];
+    const weightInputElement = lastFourInputs[0];
+    
+    // 填充到面板并保存原始元素引用
+    originalLogisticsElements.weight = weightInputElement;
+    weightGroup.input.value = weightInputElement.value;
+    weightGroup.input.readOnly = false;
+
+    originalLogisticsElements.length = lengthInputElement;
+    lengthGroup.input.value = lengthInputElement.value;
+    lengthGroup.input.readOnly = false;
+
+    originalLogisticsElements.width = widthInputElement;
+    widthGroup.input.value = widthInputElement.value;
+    widthGroup.input.readOnly = false;
+
+    originalLogisticsElements.height = heightInputElement;
+    heightGroup.input.value = heightInputElement.value;
+    heightGroup.input.readOnly = false;
+
+    logisticsApplyBtn.disabled = false;
+    showPanelStatus('物流信息提取成功', 'success', status);
+  });
+
+  logisticsApplyBtn.addEventListener('click', () => {
+    if (originalLogisticsElements.weight) {
+      originalLogisticsElements.weight.value = weightGroup.input.value;
+      triggerInputEvent(originalLogisticsElements.weight);
+    }
+    if (originalLogisticsElements.length) {
+      originalLogisticsElements.length.value = lengthGroup.input.value;
+      triggerInputEvent(originalLogisticsElements.length);
+    }
+    if (originalLogisticsElements.width) {
+      originalLogisticsElements.width.value = widthGroup.input.value;
+      triggerInputEvent(originalLogisticsElements.width);
+    }
+    if (originalLogisticsElements.height) {
+      originalLogisticsElements.height.value = heightGroup.input.value;
+      triggerInputEvent(originalLogisticsElements.height);
+    }
+    showPanelStatus('物流信息已应用', 'success', status);
+  });
+  
+  // 为库存应用按钮添加事件监听器
+  inventoryApplyBtn.addEventListener('click', () => {
+    const stockValue = inventoryInput.value;
+    if (stockValue === '' || isNaN(stockValue)) {
+      showPanelStatus('请输入有效的库存数量', 'error', status);
+      return;
+    }
+
+    const targetWrappers = document.querySelectorAll('.jx-input.jx-input--small.jx-input--suffix.pro-input.jx-tooltip__trigger');
+    let count = 0;
+    targetWrappers.forEach(wrapper => {
+      const inputElement = wrapper.querySelector('input');
+      if (inputElement) {
+        inputElement.value = stockValue;
+        triggerInputEvent(inputElement);
+        count++;
+      }
+    });
+    
+    showPanelStatus(`成功将 ${count} 个项目的库存设置为 ${stockValue}`, 'success', status);
+  });
+
+  // 为描述提取按钮添加事件监听器
+  descriptionExtractBtn.addEventListener('click', () => {
+    const iframe = document.querySelector('iframe.tox-edit-area__iframe');
+    descriptionStatus.innerHTML = ''; // 清除之前的状态
+
+    if (!iframe) {
+      descriptionStatus.textContent = '错误：未找到产品描述编辑器 (iframe.tox-edit-area__iframe)';
+      return;
+    }
+
+    try {
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      const pElements = iframeDoc.querySelectorAll('p');
+
+      if (pElements.length > 0) {
+        let textSnippet = Array.from(pElements).map(p => p.textContent.trim()).join(' ').substring(0, 100);
+        if (textSnippet.length === 100) textSnippet += '...';
+        
+        const statusText = document.createElement('span');
+        statusText.textContent = `识别到文字：${textSnippet}`;
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = '全部删除';
+        deleteBtn.className = 'replace-panel-button';
+        deleteBtn.style.marginLeft = '10px';
+        deleteBtn.style.backgroundColor = '#ea4335';
+        deleteBtn.style.flex = 'none';
+        deleteBtn.style.width = '120px';
+
+        deleteBtn.addEventListener('click', () => {
+          const pElementsToDelete = iframeDoc.querySelectorAll('p');
+          pElementsToDelete.forEach(p => p.remove());
+          descriptionStatus.textContent = '所有P标签元素已删除。';
+        });
+
+        descriptionStatus.appendChild(statusText);
+        descriptionStatus.appendChild(deleteBtn);
+
+      } else {
+        descriptionStatus.textContent = '未识别到P标签文字';
+      }
+    } catch (e) {
+      descriptionStatus.textContent = `发生错误: ${e.message}`;
+      console.error("Error accessing iframe content:", e);
+    }
+  });
+  
   // 状态信息（共享所有标签页）
   const status = document.createElement('div');
   status.className = 'replace-panel-status';
@@ -473,6 +793,7 @@ function initPanel() {
   // 将所有标签内容添加到面板
   content.appendChild(titleContent);
   content.appendChild(skuContent);
+  content.appendChild(otherContent);
   content.appendChild(status);
   
   // 组装面板
@@ -1184,9 +1505,10 @@ function optimizeTitle(title) {
 4. **标题长度控制在合理范围**（一般在60到100 字符，包括空格）；
 5. **关键词应该与产品相关，不要包含特殊符号或无关词语**（如 🔥、Free shipping 等）；
 6. **不得包含URL、符号、特殊字符和非语言ASCII字符**；
-7. **每个单词的首字母大写**（连词、冠词、介词除外)。
-8. **需要返回 3 组标题建议**，每组包含英文和中文解释和推荐指数；
-9. **推荐指数为1-10，1为最不推荐，10为最推荐**；推荐指数评分规则如下：
+7. **每个单词的首字母大写**（连词、冠词、介词、手机品牌除外)。
+8. **标题中除iPhone以外的手机品牌，一律使用小写字母。例如：华为使用huawei，小米使用xiaomi，红米使用redmi，不要使用Huawei、Xiaomi、Redmi**；
+9. **需要返回 3 组标题建议**，每组包含英文和中文解释和推荐指数；
+10. **推荐指数为1-10，1为最不推荐，10为最推荐**；推荐指数评分规则如下：
 
 推荐指数用于衡量英文标题在跨境电商平台上的**潜在吸引力和搜索优化质量**，综合考虑以下 6 个维度，总分为 10 分：
 
@@ -1199,7 +1521,7 @@ function optimizeTitle(title) {
 | ⑤ 市场吸引力       | 是否具有营销性，是否具备吸引点击的潜力                        | 0–1 分   |
 | ⑥ 关键词覆盖度     | 是否包含多个相关和热门的关键词，避免过度简短化                  | 0–2 分   |
 
-10. **返回内容格式必须是 JSON**，格式如下：
+11. **返回内容格式必须是 JSON**，格式如下：
 
 \`\`\`json
 {
@@ -1607,10 +1929,10 @@ ${JSON.stringify(dataForAI, null, 2)}
 - 翻译为英文的过程中，要使用目标市场用户更容易搜索的英文关键词和热门关键词；不要简单直译，要结合电商平台流行语和惯用表达；
 - 手机型号sku不要提取公共词，翻译时要翻译为对应的英文。比如苹果15要翻译为iPhone 15，不要翻译为Apple 15。
 - 若没有公共词，\`common_terms\` 设为空数组
-- 公共词一定要是当前规格中所有的sku都包含的内容，例如“可爱狗狗、可爱猫猫、可爱兔兔、帅气猫猫”，不能将“可爱”作为公共词。
-- 公共词要合理。例如“红色、蓝色、黄色、绿色”不能将“色”字作为公共词。
-- sku公共词不能是手机型号或品牌。例如“iPhone 14 Pro Max、iPhone 14 Pro、iPhone 14、iPhone 13 Pro Max、iPhone 13 Pro”不能将“iPhone”作为公共词。
-- 精简时可以适当删去过多的重复描述词，例如“可爱狗狗（壳+可爱超长镶钻挂件）、可爱狗狗（单壳）、帅气猫猫（壳+可爱超长镶钻挂件）、帅气猫猫（单壳）”，可以精简为“可爱狗狗（壳）、可爱狗狗（壳+挂件）、帅气猫猫（壳）、帅气猫猫（壳+挂件）”。
+- 公共词一定要是当前规格中所有的sku都包含的内容，例如"可爱狗狗、可爱猫猫、可爱兔兔、帅气猫猫"，不能将"可爱"作为公共词。
+- 公共词要合理。例如"红色、蓝色、黄色、绿色"不能将"色"字作为公共词。
+- sku公共词不能是手机型号或品牌。例如"iPhone 14 Pro Max、iPhone 14 Pro、iPhone 14、iPhone 13 Pro Max、iPhone 13 Pro"不能将"iPhone"作为公共词。
+- 精简时可以适当删去过多的重复描述词，例如"可爱狗狗（壳+可爱超长镶钻挂件）、可爱狗狗（单壳）、帅气猫猫（壳+可爱超长镶钻挂件）、帅气猫猫（单壳）"，可以精简为"可爱狗狗（壳）、可爱狗狗（壳+挂件）、帅气猫猫（壳）、帅气猫猫（壳+挂件）"。
 
 返回格式：
 \`\`\`json
