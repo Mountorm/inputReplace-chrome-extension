@@ -568,12 +568,10 @@
 
 .sku-spec-title {
   font-weight: bold;
-  font-size: 14px;
-  color: #333;
   margin-bottom: 10px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  position: relative;
 }
 
 .sku-values-container {
@@ -586,8 +584,8 @@
   flex-grow: 1;
   flex-basis: calc(50% - 10px);
   display: flex;
-  align-items: center;
-  gap: 5px;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .sku-value-input {
@@ -601,18 +599,34 @@
 }
 
 .sku-delete-btn {
-  padding: 4px 8px;
-  background-color: #f44336;
+  background-color: #ff4d4f;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 3px;
+  padding: 3px 6px;
   cursor: pointer;
   font-size: 12px;
-  flex-shrink: 0;
+  margin-left: 5px;
 }
 
 .sku-delete-btn:hover {
-  background-color: #d32f2f;
+  background-color: #ff7875;
+}
+
+/* 新增文字链接样式的删除按钮 */
+.sku-delete-link {
+  color: #ff4d4f;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  text-decoration: underline;
+  padding: 0 5px;
+  margin-left: 5px;
+}
+
+.sku-delete-link:hover {
+  color: #ff7875;
 }
 
 .sku-spec-apply-container {
@@ -621,14 +635,14 @@
 }
 
 .sku-spec-apply-btn {
-  padding: 6px 12px;
-  background-color: #2196F3;
+  margin-left: 10px;
+  background-color: #4caf50;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 3px;
+  padding: 3px 8px;
   cursor: pointer;
-  font-size: 13px;
-  margin-left: 10px;
+  font-size: 12px;
 }
 
 .sku-spec-apply-btn:hover {
@@ -652,4 +666,68 @@
 
 .sku-container::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+.sku-optimize-btn {
+  background-color: #ff9800;
+  color: white;
+  font-weight: bold;
+}
+
+.sku-optimize-btn:hover {
+  background-color: #f57c00;
+}
+
+.sku-common-terms {
+  font-weight: normal;
+  font-size: 12px;
+  color: #007bff;
+  margin-left: 8px;
+}
+
+.original-sku-text {
+    font-size: 11px;
+    color: #666;
+    padding-left: 2px;
+    margin-top: 2px;
+    line-height: 1.2;
+    word-break: break-word;
+    max-width: 100%;
+    white-space: pre-wrap;
+}
+
+.common-terms-container {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  margin-left: 15px;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.common-terms-input {
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  padding: 3px 6px;
+  font-size: 12px;
+  width: 150px;
+  flex-grow: 1;
+  min-width: 100px;
+}
+
+.common-terms-desc {
+  font-size: 11px;
+  color: #666;
+  margin-right: 5px;
+  white-space: nowrap;
+}
+
+.add-to-title-btn {
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 3px 8px;
+  cursor: pointer;
+  font-size: 12px;
 } 

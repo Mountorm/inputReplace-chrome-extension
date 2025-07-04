@@ -164,14 +164,9 @@ function initPanel() {
   const tabs = document.createElement('div');
   tabs.className = 'panel-tabs';
   
-  // 创建三个标签
-  const replaceTab = document.createElement('div');
-  replaceTab.className = 'panel-tab active';
-  replaceTab.textContent = '替换';
-  replaceTab.dataset.tab = 'replace';
-  
+  // 创建两个标签
   const titleTab = document.createElement('div');
-  titleTab.className = 'panel-tab';
+  titleTab.className = 'panel-tab active'; // 默认激活标题优化标签
   titleTab.textContent = '标题优化';
   titleTab.dataset.tab = 'title';
   
@@ -180,12 +175,11 @@ function initPanel() {
   skuTab.textContent = 'SKU优化';
   skuTab.dataset.tab = 'sku';
   
-  tabs.appendChild(replaceTab);
   tabs.appendChild(titleTab);
   tabs.appendChild(skuTab);
   
   // 添加标签切换事件
-  [replaceTab, titleTab, skuTab].forEach(tab => {
+  [titleTab, skuTab].forEach(tab => {
     tab.addEventListener('click', function() {
       // 移除所有标签和内容的活动状态
       document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
@@ -207,100 +201,9 @@ function initPanel() {
   
   // 创建标签内容容器
   
-  // 1. 替换功能标签内容
-  const replaceContent = document.createElement('div');
-  replaceContent.className = 'tab-content active';
-  replaceContent.dataset.tab = 'replace';
-
-  // 搜索关键词输入框
-  const searchGroup = document.createElement('div');
-  searchGroup.className = 'replace-panel-form-group';
-  
-  const searchLabel = document.createElement('label');
-  searchLabel.className = 'replace-panel-label';
-  searchLabel.textContent = '搜索关键词：';
-  
-  const searchInput = document.createElement('input');
-  searchInput.type = 'text';
-  searchInput.className = 'replace-panel-input';
-  searchInput.setAttribute('data-panel-element', 'true'); // 标记为面板元素
-  searchInput.placeholder = '输入要查找的文本';
-  
-  searchGroup.appendChild(searchLabel);
-  searchGroup.appendChild(searchInput);
-  
-  // 替换内容输入框
-  const replaceGroup = document.createElement('div');
-  replaceGroup.className = 'replace-panel-form-group';
-  
-  const replaceLabel = document.createElement('label');
-  replaceLabel.className = 'replace-panel-label';
-  replaceLabel.textContent = '替换内容：';
-  
-  const replaceInput = document.createElement('input');
-  replaceInput.type = 'text';
-  replaceInput.className = 'replace-panel-input';
-  replaceInput.setAttribute('data-panel-element', 'true'); // 标记为面板元素
-  replaceInput.placeholder = '输入要替换的文本';
-  
-  replaceGroup.appendChild(replaceLabel);
-  replaceGroup.appendChild(replaceInput);
-  
-  // 第一行按钮组（搜索和下一个）
-  const buttonGroup1 = document.createElement('div');
-  buttonGroup1.className = 'replace-panel-button-group';
-  
-  const searchBtn = document.createElement('button');
-  searchBtn.className = 'replace-panel-button replace-panel-search-btn';
-  searchBtn.textContent = '搜索';
-  
-  const nextBtn = document.createElement('button');
-  nextBtn.className = 'replace-panel-button replace-panel-next-btn';
-  nextBtn.textContent = '下一个';
-  nextBtn.disabled = true;
-  
-  buttonGroup1.appendChild(searchBtn);
-  buttonGroup1.appendChild(nextBtn);
-  
-  // 第二行按钮组（替换当前和替换所有）
-  const buttonGroup2 = document.createElement('div');
-  buttonGroup2.className = 'replace-panel-button-group';
-  
-  const replaceOneBtn = document.createElement('button');
-  replaceOneBtn.className = 'replace-panel-button replace-panel-replace-one-btn';
-  replaceOneBtn.textContent = '替换当前';
-  replaceOneBtn.disabled = true;
-  
-  const replaceAllBtn = document.createElement('button');
-  replaceAllBtn.className = 'replace-panel-button';
-  replaceAllBtn.textContent = '替换所有';
-  
-  buttonGroup2.appendChild(replaceOneBtn);
-  buttonGroup2.appendChild(replaceAllBtn);
-  
-  // 搜索信息显示
-  const searchInfo = document.createElement('div');
-  searchInfo.className = 'replace-panel-search-info';
-  
-  const searchCount = document.createElement('span');
-  searchCount.className = 'replace-panel-search-count';
-  
-  const currentMatch = document.createElement('span');
-  currentMatch.className = 'replace-panel-current-match';
-  
-  searchInfo.appendChild(searchCount);
-  searchInfo.appendChild(currentMatch);
-  
-  // 组装替换标签内容
-  replaceContent.appendChild(searchGroup);
-  replaceContent.appendChild(replaceGroup);
-  replaceContent.appendChild(buttonGroup1);
-  replaceContent.appendChild(buttonGroup2);
-  replaceContent.appendChild(searchInfo);
-  
-  // 2. 标题优化标签内容
+  // 标题优化标签内容
   const titleContent = document.createElement('div');
-  titleContent.className = 'tab-content';
+  titleContent.className = 'tab-content active'; // 默认激活
   titleContent.dataset.tab = 'title';
   
   // 添加设置按钮
@@ -330,8 +233,8 @@ function initPanel() {
   const extractInput = document.createElement('input');
   extractInput.type = 'text';
   extractInput.className = 'replace-panel-input';
-  extractInput.setAttribute('readonly', 'readonly');
-  extractInput.placeholder = '点击提取按钮获取内容';
+  // 移除readonly属性，使其可编辑
+  extractInput.placeholder = '点击提取按钮获取内容或直接输入';
   
   // 创建按钮容器
   const buttonContainer = document.createElement('div');
@@ -538,15 +441,22 @@ function initPanel() {
   skuExtractBtn.className = 'replace-panel-button title-main-button';
   skuExtractBtn.textContent = '提取SKU';
   skuExtractBtn.addEventListener('click', extractSkuValues);
+
+  const skuOptimizeBtn = document.createElement('button');
+  skuOptimizeBtn.className = 'replace-panel-button title-main-button sku-optimize-btn';
+  skuOptimizeBtn.textContent = 'AI优化';
+  skuOptimizeBtn.disabled = true; // 初始禁用
+  skuOptimizeBtn.addEventListener('click', optimizeSkuNames);
   
   const applyAllBtn = document.createElement('button');
   applyAllBtn.className = 'replace-panel-button sku-apply-all-btn';
   applyAllBtn.textContent = '一键应用';
   applyAllBtn.id = 'sku-apply-all-btn';
-  applyAllBtn.style.display = 'none'; // 初始隐藏
+  applyAllBtn.disabled = true; // 初始禁用
   applyAllBtn.addEventListener('click', applyAllSkuValues);
   
   skuTopButtons.appendChild(skuExtractBtn);
+  skuTopButtons.appendChild(skuOptimizeBtn);
   skuTopButtons.appendChild(applyAllBtn);
   skuContent.appendChild(skuTopButtons);
   
@@ -561,7 +471,6 @@ function initPanel() {
   status.className = 'replace-panel-status';
   
   // 将所有标签内容添加到面板
-  content.appendChild(replaceContent);
   content.appendChild(titleContent);
   content.appendChild(skuContent);
   content.appendChild(status);
@@ -583,107 +492,7 @@ function initPanel() {
   toggleButton.appendChild(toggleIcon);
   toggleButton.addEventListener('click', showPanel);
   
-  // 添加事件监听
-  searchInput.addEventListener('input', function() {
-    resetSearchState(searchCount, currentMatch, nextBtn, replaceOneBtn, status);
-  });
-  
-  searchBtn.addEventListener('click', function() {
-    const searchText = searchInput.value.trim();
-    
-    if (!searchText) {
-      showPanelStatus('请输入要查找的文本', 'error', status);
-      return;
-    }
-    
-    resetSearchState(searchCount, currentMatch, nextBtn, replaceOneBtn, status);
-    const result = searchInputValues(searchText);
-    
-    if (result.success) {
-      if (result.count > 0) {
-        nextBtn.disabled = result.count <= 1;
-        replaceOneBtn.disabled = false;
-        searchCount.textContent = `共找到 ${result.count} 个匹配`;
-        currentMatch.textContent = `当前: 1/${result.count}`;
-      } else {
-        searchCount.textContent = '未找到匹配项';
-        currentMatch.textContent = '';
-        showPanelStatus('未找到匹配的文本', 'error', status);
-      }
-    } else {
-      showPanelStatus(result.message || '搜索操作失败', 'error', status);
-    }
-  });
-  
-  nextBtn.addEventListener('click', function() {
-    if (searchResults.length <= 0) return;
-    
-    let currentIndex = getCurrentIndex();
-    currentIndex = (currentIndex + 1) % searchResults.length;
-    
-    goToMatch(currentIndex);
-    currentMatch.textContent = `当前: ${currentIndex + 1}/${searchResults.length}`;
-  });
-  
-  replaceOneBtn.addEventListener('click', function() {
-    const searchText = searchInput.value.trim();
-    const replaceText = replaceInput.value;
-    
-    if (!searchText) {
-      showPanelStatus('请输入要查找的文本', 'error', status);
-      return;
-    }
-    
-    const currentIndex = getCurrentIndex();
-    const result = replaceCurrentMatch(searchText, replaceText, currentIndex);
-    
-    if (result.success) {
-      showPanelStatus(`已替换当前匹配项`, 'success', status);
-      
-      // 更新搜索结果
-      if (searchResults.length > 0) {
-        // 重新搜索以更新结果
-        searchInputValues(searchText);
-        
-        if (searchResults.length > 0) {
-          // 如果还有结果，更新显示
-          nextBtn.disabled = searchResults.length <= 1;
-          replaceOneBtn.disabled = false;
-          searchCount.textContent = `共找到 ${searchResults.length} 个匹配`;
-          
-          // 如果当前索引超出范围，重置为0
-          let newIndex = Math.min(currentIndex, searchResults.length - 1);
-          goToMatch(newIndex);
-          currentMatch.textContent = `当前: ${newIndex + 1}/${searchResults.length}`;
-        } else {
-          // 如果没有结果了，重置状态
-          resetSearchState(searchCount, currentMatch, nextBtn, replaceOneBtn, status);
-          searchCount.textContent = '未找到匹配项';
-        }
-      }
-    } else {
-      showPanelStatus(result.message || '替换操作失败', 'error', status);
-    }
-  });
-  
-  replaceAllBtn.addEventListener('click', function() {
-    const searchText = searchInput.value.trim();
-    const replaceText = replaceInput.value;
-    
-    if (!searchText) {
-      showPanelStatus('请输入要查找的文本', 'error', status);
-      return;
-    }
-    
-    const result = replaceInputValues(searchText, replaceText);
-    
-    if (result.success) {
-      showPanelStatus(`替换完成！共替换了 ${result.count} 处文本。`, 'success', status);
-      resetSearchState(searchCount, currentMatch, nextBtn, replaceOneBtn, status);
-    } else {
-      showPanelStatus(result.message || '替换操作失败', 'error', status);
-    }
-  });
+  // 不再需要替换功能相关的事件监听
   
   // 添加面板拖动功能
   document.addEventListener('mousemove', function(e) {
@@ -1577,13 +1386,18 @@ function extractSkuValues() {
     if (currentSkuCount > 0) {
         const specApplyBtn = document.createElement('button');
         specApplyBtn.className = 'sku-spec-apply-btn';
-        specApplyBtn.textContent = `应用规格${index + 1}`;
+        specApplyBtn.textContent = `应用规格`;
         specApplyBtn.addEventListener('click', (e) => {
             e.stopPropagation(); // 防止触发其他事件
             applySpecGroupSkuValues(index);
         });
         specGroupTitle.appendChild(specApplyBtn);
     }
+
+    // 为通用术语预留位置
+    const commonTermsContainer = document.createElement('div');
+    commonTermsContainer.className = 'common-terms-container';
+    specGroupTitle.appendChild(commonTermsContainer);
 
     specGroupContainer.appendChild(specGroupTitle);
 
@@ -1608,9 +1422,24 @@ function extractSkuValues() {
         skuValueItem.className = 'sku-value-item';
         skuValueItem.appendChild(skuValueInput);
         
-        // 创建删除按钮
+        // 创建一个空的原始SKU文本节点作为占位符，稍后会由AI优化函数填充
+        const originalSkuText = document.createElement('div');
+        originalSkuText.className = 'original-sku-text';
+        skuValueItem.appendChild(originalSkuText);
+        
+        // 创建输入框包装器，用于并排放置输入框和删除链接
+        const inputWrapper = document.createElement('div');
+        inputWrapper.style.display = 'flex';
+        inputWrapper.style.alignItems = 'center';
+        inputWrapper.style.width = '100%';
+        
+        // 将输入框从skuValueItem中移除并添加到包装器中
+        skuValueItem.removeChild(skuValueInput);
+        inputWrapper.appendChild(skuValueInput);
+        
+        // 创建删除链接
         const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'sku-delete-btn';
+        deleteBtn.className = 'sku-delete-link';
         deleteBtn.textContent = '删除';
         deleteBtn.addEventListener('click', () => {
             // 从原始输入框向上查找包含所需类的父级容器
@@ -1630,7 +1459,10 @@ function extractSkuValues() {
                 }
             }
         });
-        skuValueItem.appendChild(deleteBtn);
+        inputWrapper.appendChild(deleteBtn);
+        
+        // 将包装器添加到skuValueItem
+        skuValueItem.appendChild(inputWrapper);
 
         skuValuesContainer.appendChild(skuValueItem);
         totalSkuCount++;
@@ -1644,15 +1476,19 @@ function extractSkuValues() {
     skuContainer.appendChild(specGroupContainer);
   });
 
-  // 更新一键应用按钮的文本和可见性
+  // 更新一键应用和AI优化按钮的状态
   const applyAllBtn = document.getElementById('sku-apply-all-btn');
+  const skuOptimizeBtn = document.querySelector('.sku-optimize-btn');
+
   if (totalSkuCount > 0) {
     const totalCombinations = skuCounts.reduce((acc, count) => acc * (count || 1), 1);
     applyAllBtn.textContent = `一键应用所有SKU (组合数: ${totalCombinations})`;
-    applyAllBtn.style.display = 'inline-block';
+    applyAllBtn.disabled = false; // 启用按钮
+    skuOptimizeBtn.disabled = false; // 启用按钮
     showPanelStatus(`成功提取 ${totalSkuCount} 个SKU值，共 ${specGroups.length} 个规格组`, 'success', status);
   } else {
-    applyAllBtn.style.display = 'none';
+    applyAllBtn.disabled = true; // 禁用按钮
+    skuOptimizeBtn.disabled = true; // 禁用按钮
     showPanelStatus('未找到SKU值', 'error', status);
   }
 }
@@ -1708,4 +1544,262 @@ function applyAllSkuValues() {
   });
 
   showPanelStatus(`已应用 ${successCount}/${totalCount} 个SKU值`, 'success', status);
+}
+
+function optimizeSkuNames() {
+    const status = document.querySelector('.replace-panel-status');
+    showPanelStatus('正在进行SKU智能优化...', 'info', status);
+
+    // 禁用按钮
+    document.querySelector('.sku-optimize-btn').disabled = true;
+    document.querySelector('#sku-apply-all-btn').disabled = true;
+
+    // 显示加载动画
+    const skuContainer = document.getElementById('sku-container');
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.className = 'loading-overlay';
+    loadingOverlay.innerHTML = `<div class="loading-spinner"></div><div class="loading-text">AI正在优化SKU...</div>`;
+    skuContainer.prepend(loadingOverlay);
+
+    // 准备发送给AI的数据
+    const dataForAI = window.skuMappings.map((group, index) => {
+        return {
+            spec_group: index + 1,
+            skus: group.map(item => item.panelInput.value)
+        };
+    });
+
+    const userPrompt = `
+请分析以下多组SKU规格，为每一组提取通用词，并对每个SKU进行精简优化。
+规格数据:
+${JSON.stringify(dataForAI, null, 2)}
+`;
+
+    const requestData = {
+        model: apiSettings.model,
+        temperature: apiSettings.temperature,
+        max_tokens: apiSettings.max_tokens,
+        messages: [
+            {
+                role: "system",
+                content: `你是一位经验丰富的电商商品数据优化专家，擅长为跨境电商场景中的商品规格信息进行精简处理。
+
+现在你将收到以下信息：
+- 多个规格组（如"颜色"、"款式"、"图案"等）
+- 所有规格组下多个原始 SKU 名称（中文）
+
+你的任务如下：
+
+1. 分析这些 SKU 名称中出现的 **重复信息（公共词）**，例如统一的品牌名、风格词、材质描述等，并将它们翻译为英文，作为 \`common_terms_en\`；
+2. 对每个 SKU 名称进行精简，仅保留真正能区分的部分（即规格差异项）作为 \`optimized_sku\`；
+3. 将精简后的 SKU 名称翻译为英文，作为 \`optimized_sku_en\`。注意翻译后的名称要尽可能小于等于45个字符，如果无法避免地超出长度时请返回 out of 45 characters，以引导用户删掉这个sku；
+4. 返回包含以下字段的 JSON 对象：
+   - \`spec_group\`: 规格组序号
+   - \`common_terms\`: 这些 SKU 中出现的公共词
+   - \`common_terms_en\`: 公共词的英文翻译
+   - \`sku_mappings\`: 一个数组，每项包含：
+     - \`original_sku\`: 原始 SKU 名称
+     - \`optimized_sku\`: 精简后的 SKU 名称
+     - \`optimized_sku_en\`: 精简后的 SKU 名称（翻译为英文）
+
+注意：
+- 保持字段结构一致
+- 翻译为英文的过程中，要使用目标市场用户更容易搜索的英文关键词和热门关键词；不要简单直译，要结合电商平台流行语和惯用表达；
+- 手机型号sku不要提取公共词，翻译时要翻译为对应的英文。比如苹果15要翻译为iPhone 15，不要翻译为Apple 15。
+- 若没有公共词，\`common_terms\` 设为空数组
+- 公共词一定要是当前规格中所有的sku都包含的内容，例如“可爱狗狗、可爱猫猫、可爱兔兔、帅气猫猫”，不能将“可爱”作为公共词。
+- 公共词要合理。例如“红色、蓝色、黄色、绿色”不能将“色”字作为公共词。
+- sku公共词不能是手机型号或品牌。例如“iPhone 14 Pro Max、iPhone 14 Pro、iPhone 14、iPhone 13 Pro Max、iPhone 13 Pro”不能将“iPhone”作为公共词。
+- 精简时可以适当删去过多的重复描述词，例如“可爱狗狗（壳+可爱超长镶钻挂件）、可爱狗狗（单壳）、帅气猫猫（壳+可爱超长镶钻挂件）、帅气猫猫（单壳）”，可以精简为“可爱狗狗（壳）、可爱狗狗（壳+挂件）、帅气猫猫（壳）、帅气猫猫（壳+挂件）”。
+
+返回格式：
+\`\`\`json
+{
+  "optimizations": [
+    {
+      "spec_group": 1,
+      "common_terms": ["夏日风", "纯棉T恤"],
+      "common_terms_en": ["Summer Style", "Cotton T-Shirt"],
+      "sku_mappings": [
+        { 
+          "original_sku": "夏日风纯棉T恤 红色", 
+          "optimized_sku": "红色",
+          "optimized_sku_en": "Red"
+        },
+        { 
+          "original_sku": "夏日风纯棉T恤 蓝色", 
+          "optimized_sku": "蓝色",
+          "optimized_sku_en": "Blue"
+        }
+      ]
+    },
+    {
+      "spec_group": 2,
+      "common_terms": [],
+      "common_terms_en": [],
+      "sku_mappings": [
+        { 
+          "original_sku": "款式A", 
+          "optimized_sku": "款式A",
+          "optimized_sku_en": "Style A"
+        },
+        { 
+          "original_sku": "款式B", 
+          "optimized_sku": "款式B",
+          "optimized_sku_en": "Style B"
+        }
+      ]
+    }
+  ]
+}
+\`\`\`
+`
+            },
+            {
+                role: "user",
+                content: userPrompt
+            }
+        ],
+        response_format: { type: "json_object" }
+    };
+
+    fetch('https://api.deepseek.com/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiSettings.apiKey}`
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(data => handleSkuApiResponse(data))
+    .catch(error => {
+        showPanelStatus(`SKU优化失败: ${error.message}`, 'error', status);
+    })
+    .finally(() => {
+        // 恢复按钮并移除加载动画
+        document.querySelector('.sku-optimize-btn').disabled = false;
+        document.querySelector('#sku-apply-all-btn').disabled = false;
+        loadingOverlay.remove();
+    });
+}
+
+function handleSkuApiResponse(data) {
+    const status = document.querySelector('.replace-panel-status');
+    try {
+        if (!data.choices || !data.choices[0].message || !data.choices[0].message.content) {
+            throw new Error('API响应数据格式不正确');
+        }
+
+        const optimizations = JSON.parse(data.choices[0].message.content).optimizations;
+        if (!optimizations || !Array.isArray(optimizations)) {
+             throw new Error('API返回数据缺少 optimizations 字段');
+        }
+
+        optimizations.forEach(opt => {
+            const groupIndex = opt.spec_group - 1;
+            const groupMappings = window.skuMappings[groupIndex];
+            
+            // 更新通用术语
+            const titleElement = document.querySelectorAll('.sku-spec-title')[groupIndex];
+            if (titleElement) {
+                // 查找已存在的通用术语容器
+                let commonTermsContainer = titleElement.querySelector('.common-terms-container');
+                
+                // 如果容器已存在，清空其内容；否则创建一个新的
+                if (commonTermsContainer) {
+                    commonTermsContainer.innerHTML = '';
+                } else {
+                    commonTermsContainer = document.createElement('div');
+                    commonTermsContainer.className = 'common-terms-container';
+                    titleElement.appendChild(commonTermsContainer);
+                }
+                
+                // 创建英文通用术语输入框
+                const commonTermsInput = document.createElement('input');
+                commonTermsInput.type = 'text';
+                commonTermsInput.className = 'common-terms-input';
+                commonTermsInput.value = opt.common_terms_en && Array.isArray(opt.common_terms_en) ? 
+                    opt.common_terms_en.join(', ') : '';
+                
+                // 创建中文通用术语描述
+                const commonTermsDesc = document.createElement('div');
+                commonTermsDesc.className = 'common-terms-desc';
+                commonTermsDesc.textContent = opt.common_terms && Array.isArray(opt.common_terms) && opt.common_terms.length > 0 ? 
+                    `公共词: ${opt.common_terms.join(', ')}` : '';
+                
+                // 创建"加入标题"按钮
+                const addToTitleBtn = document.createElement('button');
+                addToTitleBtn.className = 'add-to-title-btn';
+                addToTitleBtn.textContent = '加入标题';
+                addToTitleBtn.addEventListener('click', function() {
+                    // 查找页面中的标题输入框
+                    const titleInputs = Array.from(document.querySelectorAll('input[type="text"], textarea')).filter(input => {
+                        // 排除面板内的元素
+                        if (isElementInPanel(input)) return false;
+                        
+                        // 检查是否可能是标题输入框
+                        const value = input.value.trim();
+                        return value.length > 10 && value.length < 200;
+                    });
+                    
+                    // 首先尝试查找特定类名的元素
+                    const panel = document.querySelector('.chat-gpt-panel.is-title');
+                    let foundInput = null;
+                    if (panel) {
+                        const inputs = panel.querySelectorAll('input');
+                        if (inputs.length > 0) {
+                            foundInput = inputs[0];
+                        }
+                    }
+                    
+                    if (foundInput) {
+                        // 将通用术语添加到标题末尾
+                        foundInput.value = foundInput.value + ' ' + commonTermsInput.value;
+                        triggerInputEvent(foundInput);
+                        showPanelStatus('已将通用术语添加到标题', 'success', status);
+                    } else if (titleInputs.length > 0) {
+                        // 如果没有找到特定类名的元素，使用过滤后的第一个输入框
+                        titleInputs[0].value = titleInputs[0].value + ' ' + commonTermsInput.value;
+                        triggerInputEvent(titleInputs[0]);
+                        showPanelStatus('已将通用术语添加到标题', 'success', status);
+                    } else {
+                        showPanelStatus('未找到标题输入框', 'error', status);
+                    }
+                });
+                
+                // 将所有元素添加到容器中，调整顺序：先描述，再输入框，最后按钮
+                commonTermsContainer.appendChild(commonTermsDesc);
+                commonTermsContainer.appendChild(commonTermsInput);
+                commonTermsContainer.appendChild(addToTitleBtn);
+            }
+
+            // 更新SKU输入框
+            opt.sku_mappings.forEach(mapping => {
+                const correspondingMapping = groupMappings.find(m => m.panelInput.value === mapping.original_sku);
+                if (correspondingMapping) {
+                    // 使用英文翻译作为输入框的值
+                    correspondingMapping.panelInput.value = mapping.optimized_sku_en;
+                    
+                    // 更新或创建原始SKU文本
+                    const skuValueItem = correspondingMapping.panelInput.closest('.sku-value-item');
+                    if (skuValueItem) {
+                        let originalSkuText = skuValueItem.querySelector('.original-sku-text');
+                        if (!originalSkuText) {
+                            originalSkuText = document.createElement('div');
+                            originalSkuText.className = 'original-sku-text';
+                            skuValueItem.appendChild(originalSkuText);
+                        }
+                        // 显示原始和精简后的中文SKU，确保保留空格
+                        originalSkuText.textContent = `原始: ${mapping.original_sku} | 优化后: ${mapping.optimized_sku}`;
+                    }
+                }
+            });
+        });
+
+        showPanelStatus('SKU智能优化完成！', 'success', status);
+    } catch (error) {
+        console.error('处理SKU API响应时出错:', error);
+        showPanelStatus(`处理响应失败: ${error.message}`, 'error', status);
+    }
 } 
