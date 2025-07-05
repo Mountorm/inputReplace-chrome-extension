@@ -9,13 +9,14 @@ let panel = null;
 let toggleButton = null;
 let panelContainer = null;
 let isPanelEnabled = false; // 标记面板是否已启用
+let hotWords = ''; // 存储今日热词
 
 // API相关参数
 let apiSettings = {
-  apiKey: 'sk-eae202e23b094000a09a116ddf898df6',
-  model: 'deepseek-chat',
+  apiKey: 'sk-rcbseSIMpEnwXsfTfBhymRC88LvB3rPtULlobdP1dTKVKYRz',
+  model: 'deepseek-v3-0324',
   temperature: 1.2,
-  max_tokens: 5000
+  max_tokens: 4000
 };
 
 // 监听来自弹出界面的消息
@@ -115,7 +116,6 @@ function initPanel() {
   // 创建面板容器
   panel = document.createElement('div');
   panel.className = 'replace-panel hidden';
-  panel.style.pointerEvents = 'auto'; // 允许面板接收鼠标事件
   
   // 创建面板头部
   const header = document.createElement('div');
@@ -177,7 +177,7 @@ function initPanel() {
   
   const otherTab = document.createElement('div');
   otherTab.className = 'panel-tab';
-  otherTab.textContent = '其他内容';
+  otherTab.textContent = '其他信息编辑';
   otherTab.dataset.tab = 'other';
   
   tabs.appendChild(titleTab);
@@ -216,6 +216,12 @@ function initPanel() {
   const settingsContainer = document.createElement('div');
   settingsContainer.className = 'title-settings-container';
   
+  const hotWordsBtn = document.createElement('button');
+  hotWordsBtn.className = 'title-settings-button';
+  hotWordsBtn.textContent = '录入热词';
+  hotWordsBtn.title = '录入今日热词';
+  hotWordsBtn.addEventListener('click', showHotWordsModal);
+  
   const settingsBtn = document.createElement('button');
   settingsBtn.className = 'title-settings-button';
   settingsBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -225,6 +231,7 @@ function initPanel() {
   settingsBtn.title = "设置API参数";
   settingsBtn.addEventListener('click', showSettingsModal);
   
+  settingsContainer.appendChild(hotWordsBtn);
   settingsContainer.appendChild(settingsBtn);
   titleContent.appendChild(settingsContainer);
   
@@ -267,6 +274,7 @@ function initPanel() {
   });
 
   extractBtn.addEventListener('click', function() {
+    // --- 提取标题 ---
     // 查找页面中的标题输入框
     const titleInputs = Array.from(document.querySelectorAll('input[type="text"], textarea')).filter(input => {
       // 排除面板内的元素
@@ -298,6 +306,9 @@ function initPanel() {
       extractInput.value = '';
       showPanelStatus('未找到标题输入框', 'error', status);
     }
+
+    // --- 同时提取类目 ---
+    extractCategory();
   });
 
   buttonContainer.appendChild(extractBtn);
@@ -374,9 +385,14 @@ function initPanel() {
     scoreElement.id = `title-score-${groupNumber}`;
     scoreElement.textContent = '推荐指数: -';
     
+    const hotwordsCountElement = document.createElement('div');
+    hotwordsCountElement.className = 'title-used-hotwords';
+    hotwordsCountElement.id = `title-used-hotwords-${groupNumber}`;
+
     // 将按钮和推荐指数添加到容器
     buttonScoreContainer.appendChild(applyBtn);
     buttonScoreContainer.appendChild(scoreElement);
+    buttonScoreContainer.appendChild(hotwordsCountElement);
     
     // 将所有元素添加到建议组
     group.appendChild(suggestionRow);
@@ -390,6 +406,7 @@ function initPanel() {
         chinese: chineseInput
       },
       scoreElement: scoreElement,
+      hotwordsCountElement: hotwordsCountElement,
       buttons: {
         suggestion: applyBtn
       }
@@ -434,6 +451,71 @@ function initPanel() {
   titleContent.appendChild(group2.group);
   titleContent.appendChild(group3.group);
   
+  // 新增：提取类目功能
+  const categoryGroup = document.createElement('div');
+  categoryGroup.className = 'replace-panel-form-group';
+  categoryGroup.style.borderTop = '1px solid #eee';
+  categoryGroup.style.marginTop = '15px';
+  categoryGroup.style.paddingTop = '10px';
+  
+  const categoryLabel = document.createElement('label');
+  categoryLabel.className = 'replace-panel-label';
+  categoryLabel.textContent = '商品类目';
+  
+  const categoryContainer = document.createElement('div');
+  categoryContainer.style.display = 'flex';
+  categoryContainer.style.alignItems = 'center';
+  categoryContainer.style.gap = '10px';
+  
+  const categoryInput = document.createElement('input');
+  categoryInput.type = 'text';
+  categoryInput.className = 'replace-panel-input';
+  categoryInput.placeholder = '点击"提取类目"按钮';
+  categoryInput.disabled = true;
+  
+  categoryContainer.appendChild(categoryInput);
+  
+  categoryGroup.appendChild(categoryLabel);
+  categoryGroup.appendChild(categoryContainer);
+  
+  titleContent.appendChild(categoryGroup);
+  
+  function extractCategory() {
+    const status = document.querySelector('.replace-panel-status');
+    const popper = document.querySelector('[class*="category-selector-popper-"]');
+
+    if (!popper) {
+        // 由于是自动触发，找不到时不显示错误，直接清空即可
+        categoryInput.value = '';
+        return;
+    }
+
+    const pathElements = Array.from(popper.querySelectorAll('.in-active-path'));
+    const activeElement = popper.querySelector('.is-active');
+
+    const categoryParts = [];
+
+    // querySelectorAll 应该能保证DOM顺序
+    pathElements.forEach(el => {
+        const text = el.textContent.trim();
+        if (text) categoryParts.push(text);
+    });
+
+    if (activeElement) {
+        const text = activeElement.textContent.trim();
+        // 如果 active 元素也是 path 的一部分，防止重复添加
+        if (text && !categoryParts.includes(text)) {
+            categoryParts.push(text);
+        }
+    }
+    
+    if (categoryParts.length > 0) {
+        categoryInput.value = categoryParts.join(' > ');
+    } else {
+        categoryInput.value = '';
+    }
+  }
+
   // 3. SKU优化标签内容
   const skuContent = document.createElement('div');
   skuContent.className = 'tab-content';
@@ -751,10 +833,16 @@ function initPanel() {
 
     try {
       const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-      const pElements = iframeDoc.querySelectorAll('p');
+      const allElements = iframeDoc.body.querySelectorAll('*');
 
-      if (pElements.length > 0) {
-        let textSnippet = Array.from(pElements).map(p => p.textContent.trim()).join(' ').substring(0, 100);
+      const textElementsToRemove = Array.from(allElements).filter(el =>
+        el.children.length === 0 && // 是最终元素（没有子元素）
+        el.tagName.toLowerCase() !== 'img' && // 不是图片
+        el.textContent.trim().length > 0 // 包含文字内容
+      );
+
+      if (textElementsToRemove.length > 0) {
+        let textSnippet = textElementsToRemove.map(el => el.textContent.trim()).join(' ').substring(0, 100);
         if (textSnippet.length === 100) textSnippet += '...';
         
         const statusText = document.createElement('span');
@@ -769,16 +857,15 @@ function initPanel() {
         deleteBtn.style.width = '120px';
 
         deleteBtn.addEventListener('click', () => {
-          const pElementsToDelete = iframeDoc.querySelectorAll('p');
-          pElementsToDelete.forEach(p => p.remove());
-          descriptionStatus.textContent = '所有P标签元素已删除。';
+          textElementsToRemove.forEach(el => el.remove());
+          descriptionStatus.textContent = '所有识别出的文字元素已删除。';
         });
 
         descriptionStatus.appendChild(statusText);
         descriptionStatus.appendChild(deleteBtn);
 
       } else {
-        descriptionStatus.textContent = '未识别到P标签文字';
+        descriptionStatus.textContent = '未识别到可移除的文字内容';
       }
     } catch (e) {
       descriptionStatus.textContent = `发生错误: ${e.message}`;
@@ -1485,6 +1572,23 @@ function optimizeTitle(title) {
   loadingOverlay.appendChild(loadingText);
   titleTabContent.appendChild(loadingOverlay);
   
+  // 获取类目信息
+  const category = document.querySelector('.replace-panel-input[disabled]').value;
+
+  // 基础用户提示
+  let userPrompt = `请优化以下商品标题，提供三个不同的优化建议，分别输出英文和中文版本和推荐指数。
+原标题：${title}`;
+  
+  // 如果有类目信息，则附加到提示中
+  if (category && category.trim().length > 0) {
+    userPrompt += `\n商品类目：${category}`;
+  }
+  
+  // 如果有热词，则附加到提示中
+  if (hotWords && hotWords.trim().length > 0) {
+    userPrompt += `\n\n请参考并尽量使用以下今日热词：${hotWords}`;
+  }
+  
   // 请求参数
   const requestData = {
     model: apiSettings.model,
@@ -1495,64 +1599,72 @@ function optimizeTitle(title) {
         role: "system",
         content: `# System Prompt：跨境电商商品标题优化助手
 
-你是一个精通跨境电商营销的商品标题优化专家。你的任务是根据用户提供的中文商品标题，为其生成 3 个高质量、适合跨境电商平台TikTok（主要是东南亚地区）的英文标题建议，并为每个英文标题提供一句对应的中文释义和推荐指数。
+你是一个精通跨境电商营销的商品标题优化专家。你的任务是根据用户提供的中文商品标题、商品类目和今日热词，为其生成 3 个高质量、适合跨境电商平台TikTok（主要是东南亚地区）的英文标题建议，并为每个英文标题提供一句对应的中文释义和推荐指数。
 
 ## 生成要求：
 
 1. **突出商品卖点**，包含[商品品牌] + [商品详情] + [适用范围] + [商品类型] + [主要功能/特点/优势]关键词，关键词要符合跨境电商营销的搜索习惯；
-2. **使用目标市场用户更容易搜索的英文关键词和热门关键词**；
-3. **不要简单直译**，要结合电商平台流行语和惯用表达；
-4. **标题长度控制在合理范围**（一般在60到100 字符，包括空格）；
-5. **关键词应该与产品相关，不要包含特殊符号或无关词语**（如 🔥、Free shipping 等）；
-6. **不得包含URL、符号、特殊字符和非语言ASCII字符**；
-7. **每个单词的首字母大写**（连词、冠词、介词、手机品牌除外)。
-8. **标题中除iPhone以外的手机品牌，一律使用小写字母。例如：华为使用huawei，小米使用xiaomi，红米使用redmi，不要使用Huawei、Xiaomi、Redmi**；
-9. **需要返回 3 组标题建议**，每组包含英文和中文解释和推荐指数；
-10. **推荐指数为1-10，1为最不推荐，10为最推荐**；推荐指数评分规则如下：
+2. **尽可能的使用今日热词**，你将收到一些今日热词关键词，你需要尽可能的将今日热词融入到标题中，但不要堆砌热词更不能生编硬造，热词要与商品直接相关。如果没有收到今日热词，请忽略此要求（此时热词匹配度分数为0）；
+3. **使用目标市场用户更容易搜索的英文关键词和热门关键词**；
+4. **不要简单直译**，要结合电商平台流行语和惯用表达；
+5. **标题长度控制在合理范围**（一般在60到100 字符，包括空格）；
+6. **关键词应该与产品相关，不要包含特殊符号或无关词语**（如 🔥、Free shipping 等）；
+7. **不得包含URL、符号、特殊字符和非语言ASCII字符**；
+8. **每个单词的首字母大写**（连词、冠词、介词、手机品牌除外)。
+9. **标题中除iPhone以外的手机品牌，一律使用小写字母。例如：华为使用huawei，小米使用xiaomi，红米使用redmi，不要使用Huawei、Xiaomi、Redmi**；
+10. **需要返回 3 组标题建议**，每组包含英文和中文解释和推荐指数；
+11. **推荐指数为1-10，1为最不推荐，10为最推荐**；推荐指数评分规则如下：
 
-推荐指数用于衡量英文标题在跨境电商平台上的**潜在吸引力和搜索优化质量**，综合考虑以下 6 个维度，总分为 10 分：
+推荐指数用于衡量英文标题在跨境电商平台上的**潜在吸引力和搜索优化质量**，综合考虑以下 6 个维度，总分为 10 分（如果用户没有提供今日热词，请忽略热词匹配度维度，此时满分7分）：
 
 | 评分维度           | 描述                                                           | 分值范围 |
 |--------------------|----------------------------------------------------------------|----------|
-| ① 关键词匹配度     | 是否包含平台热门搜索关键词，是否贴近用户搜索习惯              | 0–2 分   |
-| ② 卖点表达清晰度   | 是否突出商品功能、优势、使用场景等核心卖点                    | 0–2 分   |
-| ③ 英语表达自然度   | 是否符合英语母语用户的阅读习惯，是否流畅自然                   | 0–2 分   |
+| ① 热词匹配度       | 是否包含匹配的今日热词，是否贴近用户搜索习惯。如果用户没有提供今日热词，请忽略此要求，此时分数为0         | 0–3 分   |
+| ② 卖点表达清晰度   | 是否突出商品功能、优势、使用场景等核心卖点                    | 0–1 分   |
+| ③ 英语表达自然度   | 是否符合英语母语用户的阅读习惯，是否流畅自然                   | 0–1 分   |
 | ④ 标题结构合理性   | 是否结构清晰、不啰嗦，无关键词堆砌或逻辑混乱                  | 0–1 分   |
 | ⑤ 市场吸引力       | 是否具有营销性，是否具备吸引点击的潜力                        | 0–1 分   |
-| ⑥ 关键词覆盖度     | 是否包含多个相关和热门的关键词，避免过度简短化                  | 0–2 分   |
+| ⑥ 关键词覆盖度     | 是否包含多个相关和热门的关键词，避免过度简短化                  | 0–3 分   |
 
-11. **返回内容格式必须是 JSON**，格式如下：
+12. **返回内容格式必须是 JSON对象，不要使用markdown**，格式如下：
 
-\`\`\`json
+
 {
   "sug1": "英文标题建议1",
   "cn1": "中文解释1",
   "score1": "推荐指数1",
+  "usedHotwords1": ["hotwordA", "hotwordB"],
   "sug2": "英文标题建议2",
   "cn2": "中文解释2",
   "score2": "推荐指数2",
+  "usedHotwords2": [],
   "sug3": "英文标题建议3",
   "cn3": "中文解释3",
-  "score3": "推荐指数3"
+  "score3": "推荐指数3",
+  "usedHotwords3": ["hotwordC"]
 }
-\`\`\`
+
+
+\`usedHotwords\` 字段说明：
+- 这个字段代表你生成的英文标题建议中，使用了哪些我提供给你的"今日热词"。
+- \`usedHotwords\` 必须是一个字符串数组 (array of strings)。
+- 如果用户没有提供"今日热词"，或者你的建议中没有使用任何热词，请将此值设为 \`[]\` (一个空数组)。
 
 注意事项：
-用户输入的内容是一个中文商品标题；
-你只需根据该标题输出建议；
+用户输入的内容是一个中文商品标题、商品类目和今日热词；
+你只需根据该标题、类目和热词输出建议；
 不要添加任何额外说明，只返回 JSON 格式内容。`
       },
       {
         role: "user",
-        content: `请优化以下商品标题，提供三个不同的优化建议，分别输出英文和中文版本和推荐指数。
-原标题：${title}`
+        content: userPrompt
       }
     ],
     response_format: { type: "json_object" }
   };
   
   // 发送API请求
-  fetch('https://api.deepseek.com/chat/completions', {
+  fetch('https://api.lkeap.cloud.tencent.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -1594,14 +1706,21 @@ function handleApiResponse(data) {
       throw new Error('API响应数据格式不正确');
     }
     
+    // 兼容被markdown代码块包裹的JSON
+    let content = data.choices[0].message.content;
+    if (content.startsWith('```json')) {
+      content = content.substring(7, content.length - 3).trim();
+    } else if (content.startsWith('```')) {
+      content = content.substring(3, content.length - 3).trim();
+    }
+
     // 解析JSON响应
-    const content = data.choices[0].message.content;
     const suggestions = JSON.parse(content);
     
     // 验证返回数据
-    const requiredKeys = ['sug1', 'cn1', 'score1', 'sug2', 'cn2', 'score2', 'sug3', 'cn3', 'score3'];
+    const requiredKeys = ['sug1', 'cn1', 'score1', 'usedHotwords1', 'sug2', 'cn2', 'score2', 'usedHotwords2', 'sug3', 'cn3', 'score3', 'usedHotwords3'];
     for (const key of requiredKeys) {
-      if (!suggestions[key]) {
+      if (!(key in suggestions)) {
         throw new Error(`API返回数据缺少 ${key} 字段`);
       }
     }
@@ -1625,6 +1744,12 @@ function updateSuggestionInputs(suggestions) {
   document.getElementById('title-chinese-1').value = suggestions.cn1;
   document.getElementById('title-score-1').textContent = `推荐: ${suggestions.score1}/10`;
   document.getElementById('title-score-1').className = 'title-recommendation-score score-level-' + getScoreLevel(suggestions.score1);
+  const hotwordsEl1 = document.getElementById('title-used-hotwords-1');
+  if (suggestions.usedHotwords1 && suggestions.usedHotwords1.length > 0) {
+    hotwordsEl1.textContent = `命中热词: ${suggestions.usedHotwords1.join(', ')}`;
+  } else {
+    hotwordsEl1.textContent = '';
+  }
   document.getElementById('title-suggestion-1').disabled = false;
   document.getElementById('title-chinese-1').disabled = false;
   
@@ -1636,6 +1761,12 @@ function updateSuggestionInputs(suggestions) {
   document.getElementById('title-chinese-2').value = suggestions.cn2;
   document.getElementById('title-score-2').textContent = `推荐: ${suggestions.score2}/10`;
   document.getElementById('title-score-2').className = 'title-recommendation-score score-level-' + getScoreLevel(suggestions.score2);
+  const hotwordsEl2 = document.getElementById('title-used-hotwords-2');
+  if (suggestions.usedHotwords2 && suggestions.usedHotwords2.length > 0) {
+    hotwordsEl2.textContent = `命中热词: ${suggestions.usedHotwords2.join(', ')}`;
+  } else {
+    hotwordsEl2.textContent = '';
+  }
   document.getElementById('title-suggestion-2').disabled = false;
   document.getElementById('title-chinese-2').disabled = false;
   
@@ -1647,6 +1778,12 @@ function updateSuggestionInputs(suggestions) {
   document.getElementById('title-chinese-3').value = suggestions.cn3;
   document.getElementById('title-score-3').textContent = `推荐: ${suggestions.score3}/10`;
   document.getElementById('title-score-3').className = 'title-recommendation-score score-level-' + getScoreLevel(suggestions.score3);
+  const hotwordsEl3 = document.getElementById('title-used-hotwords-3');
+  if (suggestions.usedHotwords3 && suggestions.usedHotwords3.length > 0) {
+    hotwordsEl3.textContent = `命中热词: ${suggestions.usedHotwords3.join(', ')}`;
+  } else {
+    hotwordsEl3.textContent = '';
+  }
   document.getElementById('title-suggestion-3').disabled = false;
   document.getElementById('title-chinese-3').disabled = false;
   
@@ -1891,8 +2028,14 @@ function optimizeSkuNames() {
         };
     });
 
+    // 获取主标题和类目
+    const mainTitle = document.querySelector('.replace-panel-input').value; // 假设第一个input是主标题
+    const category = document.querySelector('.replace-panel-input[disabled]').value;
+
     const userPrompt = `
 请分析以下多组SKU规格，为每一组提取通用词，并对每个SKU进行精简优化。
+商品标题: ${mainTitle}
+商品类目: ${category}
 规格数据:
 ${JSON.stringify(dataForAI, null, 2)}
 `;
@@ -1909,11 +2052,11 @@ ${JSON.stringify(dataForAI, null, 2)}
 现在你将收到以下信息：
 - 多个规格组（如"颜色"、"款式"、"图案"等）
 - 所有规格组下多个原始 SKU 名称（中文）
-
+- 商品标题和类目
 你的任务如下：
 
 1. 分析这些 SKU 名称中出现的 **重复信息（公共词）**，例如统一的品牌名、风格词、材质描述等，并将它们翻译为英文，作为 \`common_terms_en\`；
-2. 对每个 SKU 名称进行精简，仅保留真正能区分的部分（即规格差异项）作为 \`optimized_sku\`；
+2. 对每个 SKU 名称进行精简，仅保留真正能区分的部分（即规格差异项）作为 \`optimized_sku\`。如果精简后为空，请你结合商品类目及标题适当翻译；
 3. 将精简后的 SKU 名称翻译为英文，作为 \`optimized_sku_en\`。注意翻译后的名称要尽可能小于等于45个字符，如果无法避免地超出长度时请返回 out of 45 characters，以引导用户删掉这个sku；
 4. 返回包含以下字段的 JSON 对象：
    - \`spec_group\`: 规格组序号
@@ -1985,7 +2128,7 @@ ${JSON.stringify(dataForAI, null, 2)}
         response_format: { type: "json_object" }
     };
 
-    fetch('https://api.deepseek.com/chat/completions', {
+    fetch('https://api.lkeap.cloud.tencent.com/v1/chat/completions', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -2013,7 +2156,15 @@ function handleSkuApiResponse(data) {
             throw new Error('API响应数据格式不正确');
         }
 
-        const optimizations = JSON.parse(data.choices[0].message.content).optimizations;
+        // 兼容被markdown代码块包裹的JSON
+        let content = data.choices[0].message.content;
+        if (content.startsWith('```json')) {
+          content = content.substring(7, content.length - 3).trim();
+        } else if (content.startsWith('```')) {
+          content = content.substring(3, content.length - 3).trim();
+        }
+        
+        const optimizations = JSON.parse(content).optimizations;
         if (!optimizations || !Array.isArray(optimizations)) {
              throw new Error('API返回数据缺少 optimizations 字段');
         }
@@ -2021,10 +2172,64 @@ function handleSkuApiResponse(data) {
         optimizations.forEach(opt => {
             const groupIndex = opt.spec_group - 1;
             const groupMappings = window.skuMappings[groupIndex];
+            let outOfLimitCount = 0;
+
+            // 更新SKU输入框
+            opt.sku_mappings.forEach(mapping => {
+                const correspondingMapping = groupMappings.find(m => m.panelInput.value === mapping.original_sku);
+                if (correspondingMapping) {
+                    // 检查是否超出长度
+                    if (mapping.optimized_sku_en.toLowerCase() === 'out of 45 characters') {
+                        outOfLimitCount++;
+                        // 可以选择在这里给输入框一个特殊的样式
+                        correspondingMapping.panelInput.style.borderColor = 'red';
+                        correspondingMapping.panelInput.style.backgroundColor = '#fff0f0';
+                    } else {
+                        correspondingMapping.panelInput.style.borderColor = '';
+                        correspondingMapping.panelInput.style.backgroundColor = '';
+                    }
+
+                    // 使用英文翻译作为输入框的值
+                    correspondingMapping.panelInput.value = mapping.optimized_sku_en;
+                    
+                    // 更新或创建原始SKU文本
+                    const skuValueItem = correspondingMapping.panelInput.closest('.sku-value-item');
+                    if (skuValueItem) {
+                        let originalSkuText = skuValueItem.querySelector('.original-sku-text');
+                        if (!originalSkuText) {
+                            originalSkuText = document.createElement('div');
+                            originalSkuText.className = 'original-sku-text';
+                            skuValueItem.appendChild(originalSkuText);
+                        }
+                        // 显示原始和精简后的中文SKU，确保保留空格
+                        originalSkuText.textContent = `原始: ${mapping.original_sku} | 优化后: ${mapping.optimized_sku}`;
+                    }
+                }
+            });
             
-            // 更新通用术语
+            // 更新通用术语和超限提示
             const titleElement = document.querySelectorAll('.sku-spec-title')[groupIndex];
             if (titleElement) {
+                // 移除旧的超限提示
+                const oldWarning = titleElement.querySelector('.sku-length-warning');
+                if (oldWarning) {
+                    oldWarning.remove();
+                }
+
+                // 如果有超限的SKU，则添加提示
+                if (outOfLimitCount > 0) {
+                    const warningElement = document.createElement('span');
+                    warningElement.className = 'sku-length-warning';
+                    warningElement.textContent = `(${outOfLimitCount}个SKU超长需删除)`;
+                    // 插入到 "应用规格" 按钮之前
+                    const applyBtn = titleElement.querySelector('.sku-spec-apply-btn');
+                    if (applyBtn) {
+                        titleElement.insertBefore(warningElement, applyBtn);
+                    } else {
+                        titleElement.appendChild(warningElement);
+                    }
+                }
+
                 // 查找已存在的通用术语容器
                 let commonTermsContainer = titleElement.querySelector('.common-terms-container');
                 
@@ -2095,28 +2300,6 @@ function handleSkuApiResponse(data) {
                 commonTermsContainer.appendChild(commonTermsInput);
                 commonTermsContainer.appendChild(addToTitleBtn);
             }
-
-            // 更新SKU输入框
-            opt.sku_mappings.forEach(mapping => {
-                const correspondingMapping = groupMappings.find(m => m.panelInput.value === mapping.original_sku);
-                if (correspondingMapping) {
-                    // 使用英文翻译作为输入框的值
-                    correspondingMapping.panelInput.value = mapping.optimized_sku_en;
-                    
-                    // 更新或创建原始SKU文本
-                    const skuValueItem = correspondingMapping.panelInput.closest('.sku-value-item');
-                    if (skuValueItem) {
-                        let originalSkuText = skuValueItem.querySelector('.original-sku-text');
-                        if (!originalSkuText) {
-                            originalSkuText = document.createElement('div');
-                            originalSkuText.className = 'original-sku-text';
-                            skuValueItem.appendChild(originalSkuText);
-                        }
-                        // 显示原始和精简后的中文SKU，确保保留空格
-                        originalSkuText.textContent = `原始: ${mapping.original_sku} | 优化后: ${mapping.optimized_sku}`;
-                    }
-                }
-            });
         });
 
         showPanelStatus('SKU智能优化完成！', 'success', status);
@@ -2125,3 +2308,105 @@ function handleSkuApiResponse(data) {
         showPanelStatus(`处理响应失败: ${error.message}`, 'error', status);
     }
 } 
+
+/**
+ * 显示录入热词模态窗口
+ */
+function showHotWordsModal() {
+  // 检查是否已有模态窗口
+  if (document.querySelector('.hot-words-modal')) {
+    return;
+  }
+  
+  // 创建模态窗口背景
+  const modalOverlay = document.createElement('div');
+  modalOverlay.className = 'api-settings-overlay';
+
+  // 创建模态窗口
+  const modal = document.createElement('div');
+  modal.className = 'api-settings-modal hot-words-modal';
+
+  // 创建模态窗口标题
+  const modalTitle = document.createElement('h3');
+  modalTitle.textContent = '录入今日热词';
+  
+  // 创建文本区域
+  const textArea = document.createElement('textarea');
+  textArea.className = 'hot-words-textarea';
+  textArea.placeholder = '请在此处粘贴包含"指标"作为分隔符的热词内容...';
+  textArea.rows = 10;
+
+  // 回填已保存的热词
+  if (hotWords && hotWords.trim().length > 0) {
+    const hotWordsArray = hotWords.split(', ');
+    textArea.value = hotWordsArray.join('\n指标\n') + '\n指标\n';
+  }
+
+  // 创建预览区域
+  const previewLabel = document.createElement('label');
+  previewLabel.textContent = '热词预览（自动解析）:';
+  
+  const previewArea = document.createElement('div');
+  previewArea.className = 'hot-words-preview';
+  previewArea.textContent = '...';
+
+  // 实时解析并更新预览
+  textArea.addEventListener('input', () => {
+    const text = textArea.value;
+    const keywords = text.split(/指标|TikTok 热门商品|热门搜索/g)
+                         .map(word => word.trim().replace(/\n/g, ''))
+                         .filter(word => word.length > 0);
+    
+    previewArea.textContent = keywords.join(', ') || '...';
+  });
+
+  // 底部按钮
+  const buttonContainer = document.createElement('div');
+  buttonContainer.className = 'api-settings-buttons';
+  
+  const cancelBtn = document.createElement('button');
+  cancelBtn.textContent = '取消';
+  cancelBtn.className = 'api-settings-button api-cancel-btn';
+  cancelBtn.addEventListener('click', () => {
+    modalOverlay.remove();
+  });
+  
+  const saveBtn = document.createElement('button');
+  saveBtn.textContent = '解析并保存';
+  saveBtn.className = 'api-settings-button api-save-btn';
+  saveBtn.addEventListener('click', () => {
+    const text = textArea.value;
+    const keywords = text.split(/指标|TikTok 热门商品|热门搜索/g)
+                         .map(word => word.trim().replace(/\n/g, ''))
+                         .filter(word => word.length > 0);
+    
+    hotWords = keywords.join(', ');
+    
+    modalOverlay.remove();
+    
+    const statusElement = document.querySelector('.replace-panel-status');
+    showPanelStatus(`已成功录入 ${keywords.length} 个热词`, 'success', statusElement);
+  });
+  
+  buttonContainer.appendChild(cancelBtn);
+  buttonContainer.appendChild(saveBtn);
+  
+  // 组装模态窗口
+  modal.appendChild(modalTitle);
+  modal.appendChild(textArea);
+  modal.appendChild(previewLabel);
+  modal.appendChild(previewArea);
+  modal.appendChild(buttonContainer);
+  
+  modalOverlay.appendChild(modal);
+  
+  document.body.appendChild(modalOverlay);
+  
+  // 防止点击模态窗口背景关闭
+  modal.addEventListener('click', (e) => e.stopPropagation());
+  
+  // 点击背景关闭模态窗口
+  modalOverlay.addEventListener('click', () => {
+    modalOverlay.remove();
+  });
+}

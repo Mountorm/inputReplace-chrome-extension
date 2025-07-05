@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "上货助手",
-  "description": "包含标题、sku优化和批量替换功能",
-  "version": "1.3",
+  "description": "包含商品标题、sku优化和商品信息快速编辑功能",
+  "version": "1.5",
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
